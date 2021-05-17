@@ -1,4 +1,5 @@
 ﻿using Business.ViewModels;
+using System;
 using System.Linq;
 using TestTask.Data.Interfaces;
 using TestTask.Data.Models;
@@ -29,7 +30,7 @@ namespace TestTask.Services
 
         public TenantViewModel TenantById(int id)
         {
-            Tenant tenant = unitOfWork.TenantsRepository.GetTenantById(id);
+            var tenant = unitOfWork.TenantsRepository.GetTenantById(id);
             return new TenantViewModel {
                 FirstName = tenant.FirstName,
                 LastName = tenant.LastName,
@@ -41,29 +42,22 @@ namespace TestTask.Services
 
         public TenantViewModel[] Insert(TenantViewModel tenant)
         {
-            bool flag = true;
-            foreach(var phone in unitOfWork.TenantsRepository.GetTenants.Select(tenant => tenant.PhoneNumber))
+            if(unitOfWork.TenantsRepository.GetTenants.Any(x => x.PhoneNumber == tenant.PhoneNumber))
             {
-                if(phone == tenant.PhoneNumber)
-                {
-                    flag = false;
-                }
+                throw new Exception("Phone number is not unique: " + tenant.PhoneNumber);
             }
 
-            if (flag)
-            {
-                unitOfWork.TenantsRepository.InsertTenant(
-                    new Tenant
-                    {
-                        FirstName = tenant.FirstName,
-                        LastName = tenant.LastName,
-                        PhoneNumber = tenant.PhoneNumber,
-                        FlatNunmber = tenant.FlatNunmber,
-                        IsTenant = tenant.IsTenant
-                    });
+            unitOfWork.TenantsRepository.InsertTenant(
+               new Tenant
+               {
+                   FirstName = tenant.FirstName,
+                   LastName = tenant.LastName,
+                   PhoneNumber = tenant.PhoneNumber,
+                   FlatNunmber = tenant.FlatNunmber,
+                   IsTenant = tenant.IsTenant
+               });
 
                 unitOfWork.Save();
-            }
 
             return unitOfWork.TenantsRepository.GetTenants.Select(tenant => new TenantViewModel
             {

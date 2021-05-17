@@ -1,5 +1,7 @@
 ﻿using Business.ViewModels;
 using Moq;
+using System;
+using System.Collections.Generic;
 using TestTask.Data.Interfaces;
 using TestTask.Data.Models;
 using TestTask.Services;
@@ -16,12 +18,23 @@ namespace TestTask.Tests
             mock.Setup(apartments => apartments.ApartmentsRepository.GetApartments);
             var service = new ApartmentsService(mock.Object);
 
-            var result = service.GetFullApartments();
+            var result = service.Get();
 
             Assert.NotNull(result);
             Assert.IsType<ApartmentsViewModel[]>(result);
         }
 
-        private ApartmentsViewModel GetTestApartments() => new ApartmentsViewModel { Number = "1", RoomsCount = 2 };
+        [Fact]
+        public void GetFullApartmentsReturnsCorrectResult()
+        {
+            var mock = new Mock<IUnitOfWork>();
+            mock.Setup(apartments => apartments.ApartmentsRepository.GetApartments).Returns(mock.Object.ApartmentsRepository.GetApartments);
+            var service = new ApartmentsService(mock.Object);
+
+            var result = service.GetFullApartments();
+
+            Assert.NotNull(result);
+            Assert.IsType<ApartmentsViewModel[]>(result);
+        }
     }
 }
